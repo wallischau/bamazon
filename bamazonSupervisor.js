@@ -8,7 +8,9 @@ inq.prompt([
 	name: 'action',
 	message: 'Select action:',
 	choices: ['(VP) View PRoduct Sales by Department',
-			  '(NP) Create New Department']
+			  '(NP) Create New Department',
+			  'Exit?'
+			  ]
 	}
 ]).then(function(user) {
 	console.log(user);
@@ -23,6 +25,7 @@ inq.prompt([
 			createNewDepartment();
 			break;
 		default:
+			return;
 	}
 });//.then
 

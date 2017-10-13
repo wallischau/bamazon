@@ -1,22 +1,8 @@
 var mysql = require('mysql');
 var func = require('./shared.js');
 var inq = require('inquirer');
-inq.prompt([
-	{
-	type: 'list',
-	message: 'Menu:',
-	name: 'action',
-	choices: [
-		'(VP) View Products for Sale',
-		'(VL) View Low Inventory',
-		'(AI) Add to Inventory',
-		'(AP) Add New Product',
-		'Exit?'
-	]
-	}
-]).then(function(user) {
-	// console.log(user);
-	//extract code
+
+function listMenu(user) {
 	var code = user.action.substring(1,3);
 	console.log(code);
 	switch (code) {
@@ -35,8 +21,61 @@ inq.prompt([
 			break;
 		default:
 			return;
-	}//.then
-});
+	}
+}
+
+var question = [
+	{
+		type: 'list',
+		message: 'Menu:',
+		name: 'action',
+		choices: [
+		'(VP) View Products for Sale',
+		'(VL) View Low Inventory',
+		'(AI) Add to Inventory',
+		'(AP) Add New Product',
+		'Exit?'
+		]
+	}
+];
+
+inq.prompt(question).then(listMenu);
+// inq.prompt([
+// 	{
+// 	type: 'list',
+// 	message: 'Menu:',
+// 	name: 'action',
+// 	choices: [
+// 		'(VP) View Products for Sale',
+// 		'(VL) View Low Inventory',
+// 		'(AI) Add to Inventory',
+// 		'(AP) Add New Product',
+// 		'Exit?'
+// 	]
+// 	}
+// ]).then(function(user) {
+// 	// console.log(user);
+// 	//extract code
+// 	var code = user.action.substring(1,3);
+// 	console.log(code);
+// 	switch (code) {
+// 		case 'VP':
+// 			viewProduct();
+
+// 			break;
+// 		case 'VL':
+// 			viewLowInventory();
+// 			break;
+// 		case 'AI':
+// 			addInventory();
+// 			break;
+// 		case 'AP':
+// 			addNewProduct();
+// 			break;
+// 		default:
+// 			return;
+// 	}
+// });//.then
 
 function viewProduct() {
 	var connection = mysql.createConnection({
@@ -48,8 +87,7 @@ function viewProduct() {
 	});
 	connection.connect(function(err) {
 		if (err) throw err;
-		console.log('here');
-		// console.log(func);
+		// console.log('here');
 		func.displaySale(connection);
 		// connection.end();
 	});
@@ -65,8 +103,7 @@ function viewLowInventory() {
 	});
 	connection.connect(function(err) {
 		if (err) throw err;
-		console.log('here2');
-		// console.log(func);
+		// console.log('here2');
 		func.displayLow(connection);
 		// connection.end();
 	});
@@ -102,8 +139,7 @@ function addInventory() {
 			});
 			connection.connect(function(err) {
 				if (err) throw err;
-				console.log('here3');
-				// console.log(func);
+				// console.log('here3');
 				func.addToInventory(connection, user.quantity, user.id);
 				// connection.end();
 			});

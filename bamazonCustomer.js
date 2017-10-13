@@ -18,7 +18,7 @@ connection.connect(function(err) {
 });
 
 
-var displayItemForSale = function(doPrompt) {
+var displayItemForSale = function() {
 	console.log('sale list');
 	var query = connection.query("SELECT item_id, product_name, price, stock_quantity FROM products", function(err, res) {
 		if (err) throw err;
@@ -35,9 +35,8 @@ var displayItemForSale = function(doPrompt) {
 
 		}
 		console.table(res);
-		if (doPrompt === true) {
-
-		inq.prompt([
+		
+		var question = [
 		{
 			type: 'input',
 			name: 'inputId',
@@ -54,16 +53,40 @@ var displayItemForSale = function(doPrompt) {
 				return ((isNaN(value) === false)? true: false); 
 			}
 		}
-		]).then(function(resp) {
+		];//question
+
+		var listMenu = function(resp) {
 			console.log(resp.inputId);
 			console.log(resp.quantity);
 			//query the item
 			placePurchase(resp);
-		});//.then
-		} //if(prompt)
-		else {
-			connection.end();
 		}
+
+		inq.prompt(question).then(listMenu);
+
+		// inq.prompt([
+		// {
+		// 	type: 'input',
+		// 	name: 'inputId',
+		// 	message: 'Please enter product ID to purchase',
+		// 	validate: function(value) {
+		// 		return ((isNaN(value) === false)? true: false); 
+		// 	}
+		// },
+		// {
+		// 	type: 'input',
+		// 	name: 'quantity',
+		// 	message: 'How many unit?',
+		// 	validate: function(value) {
+		// 		return ((isNaN(value) === false)? true: false); 
+		// 	}
+		// }
+		// ]).then(function(resp) {
+		// 	console.log(resp.inputId);
+		// 	console.log(resp.quantity);
+		// 	//query the item
+		// 	placePurchase(resp);
+		// });//.then
 	});//query
 }//displayItemForsale	 
 
