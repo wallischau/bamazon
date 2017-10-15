@@ -64,29 +64,6 @@ var displayItemForSale = function() {
 
 		inq.prompt(question).then(listMenu);
 
-		// inq.prompt([
-		// {
-		// 	type: 'input',
-		// 	name: 'inputId',
-		// 	message: 'Please enter product ID to purchase',
-		// 	validate: function(value) {
-		// 		return ((isNaN(value) === false)? true: false); 
-		// 	}
-		// },
-		// {
-		// 	type: 'input',
-		// 	name: 'quantity',
-		// 	message: 'How many unit?',
-		// 	validate: function(value) {
-		// 		return ((isNaN(value) === false)? true: false); 
-		// 	}
-		// }
-		// ]).then(function(resp) {
-		// 	console.log(resp.inputId);
-		// 	console.log(resp.quantity);
-		// 	//query the item
-		// 	placePurchase(resp);
-		// });//.then
 	});//query
 }//displayItemForsale	 
 
@@ -102,7 +79,7 @@ function placePurchase(resp) {
 		}
 		if (res[0].stock_quantity >= resp.quantity) {
 			//update inventory
-			console.log('ok');
+			// console.log('ok');
 			updateStock(resp.inputId, resp.quantity, res[0].stock_quantity, res[0].price, res[0].product_sales);
 		} else {
 			//insufficient
@@ -117,7 +94,8 @@ function updateStock(id, quantity, stock, price, totalSales) {
 	var query = connection.query("UPDATE products SET stock_quantity = ?, product_sales = ? WHERE item_id = ?", [stock - quantity, totalSales + sales, id], function(err, res) {
 		if (err) throw err;
 		// console.log(res.affectedRows,' row(s) updated');
-		console.log(' stock updated');
+		// console.log(' stock updated');
+		console.log('Purschase complete');
 		console.log('Total cost: ' + sales );
 		connection.end();
 	});//query

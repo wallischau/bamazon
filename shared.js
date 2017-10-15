@@ -1,12 +1,16 @@
 require('console.table');
 var inq = require('inquirer');
 
+
+
+
 var displayItemForSale = function(connection, done) {
 	console.log('\nSale list:');
 	var query = connection.query("SELECT item_id, product_name, price, stock_quantity FROM products", function(err, res) {
 		if (err) throw err;
 		// console.log(res);
 		console.table(res);
+		inq.prompt(question).then(listMenu);
 		connection.end();
 		done = true;
 		return done;
