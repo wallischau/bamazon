@@ -7,6 +7,7 @@
 var mysql = require("mysql");
 require('console.table');
 var inq = require('inquirer');
+var colors = require('colors');
 
 var connection = mysql.createConnection({
 	host: "localhost",
@@ -20,7 +21,7 @@ var connection = mysql.createConnection({
 //setup mysql connection
 connection.connect(function(err) {
 	if (err) throw err;
-	console.log('connected as id ' + connection.threadId);
+	// console.log('connected as id ' + connection.threadId);
 	displayItemForSale();
 });
 
@@ -69,7 +70,7 @@ var question = [
 
 //display items for sale
 var displayItemForSale = function() {
-	console.log('sale list');
+	console.log('Sale list:'.yellow);
 	var query = connection.query("SELECT item_id, product_name, price, stock_quantity FROM products", function(err, res) {
 		if (err) throw err;
 		//check if item is sold out
@@ -97,7 +98,7 @@ function placePurchase(resp) {
 		if (err) throw err;
 		// console.log(res);
 		if (res.length === 0) {
-			console.log('!!!Id not found!!!\n');
+			console.log('!!!Id not found!!!\n'.red);
 			displayItemForSale();
 			// inq.prompt(question).then(answerHandling);
 			// connection.end();
@@ -109,7 +110,7 @@ function placePurchase(resp) {
 			updateStock(resp.inputId, resp.quantity, res[0].stock_quantity, res[0].price, res[0].product_sales);
 		} else {
 			//insufficient
-			console.log('insufficient stock.' + '\n=========================\n');
+			console.log('insufficient stock. \n=========================\n'.red);
 			displayItemForSale();
 			// inq.prompt(question).then(answerHandling);
 			// connection.end();
@@ -124,8 +125,9 @@ function updateStock(id, quantity, stock, price, totalSales) {
 		if (err) throw err;
 		// console.log(res.affectedRows,' row(s) updated');
 		// console.log(' stock updated');
-		console.log('Purschase complete');
-		console.log('Total cost: ' + sales + '\n=========================\n');
+		console.log('Purschase complete'.green);
+		console.log('here');
+		console.log(`Total cost: ${sales} \n=========================\n`.green);
 		displayItemForSale();
 		// inq.prompt(question).then(answerHandling);
 		// connection.end();

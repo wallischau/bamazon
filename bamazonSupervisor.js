@@ -8,6 +8,7 @@ var mysql = require('mysql');
 var inq = require('inquirer');
 // var func = require('./shared.js');
 require('console.table');
+var colors = require('colors');
 
 
 var question = [
@@ -27,11 +28,11 @@ function answerHandling(user) {
 	var act = user.action.substring(1,3);
 	switch (act) {
 		case 'VD':
-			console.log('VP');
+			// console.log('VP');
 			displaySaleByDepartment();
 			break;
 		case 'ND':
-			console.log('NP');
+			// console.log('NP');
 			createNewDepartment();
 			break;
 		default:
@@ -42,7 +43,7 @@ function answerHandling(user) {
 inq.prompt(question).then(answerHandling);
 
 var displayProductSaleByDept = function(connection) {
-	console.log('\nDisplay sales by departments:');
+	console.log('\nDisplay sales by departments:'.yellow);
 	var query = connection.query("SELECT department_id, p.department_name, over_head_costs, sum(p.product_sales) AS product_sales, (product_sales - over_head_costs) AS total_profit from products AS p INNER JOIN departments  AS d on p.department_name = d.department_name GROUP BY p.department_name", function(err, res) {
 		if (err) throw err;
 		// console.log(res);
@@ -71,23 +72,23 @@ function displaySaleByDepartment() {
 
 function validateNewDept(id, department, overhead) {
 	if ((id === 'q') || (overhead === 'q')) {
-		return false;
+		return 1;
 	}
-	if ((id === '') || (department === '') || ( overhead < 0)) {
-		return false;
+	if ((id === '') || (department === '') || ( overhead < 0) || (overhead === '')) {
+		return 2;
 	}
 	else
-		return true;
+		return 0;
 }
 
 var createNewDept = function(connection, id, department, overheadCost) {
-	console.log('\nAdd to Department...');
+	console.log('\nAdd to Department...'.yellow);
 	var query = connection.query("INSERT INTO departments(department_id, department_name, over_head_costs) VALUES ? ",
 		 [[[id, department, overheadCost]]]
 		 , function(err, res) {
 		if (err) throw err;
 		// console.log(res);
-		console.log('create completed \n============\n');
+		console.log('create completed \n============\n'.green);
 		inq.prompt(question).then(answerHandling);
 		connection.end();
 	});//query
@@ -129,8 +130,12 @@ function createNewDepartment() {
 		])
 		.then(function(user) {
 			// console.log(user);
-			if(!validateNewDept(user.id, user.department, user.overHeadCost)) {
-				console.log('!!!Invalid input!!!');
+			var status = validateNewDept(user.id, user.department, user.overHeadCost);
+			if (status > 0) {
+				if (status === 2)
+					console.log('!!!Invalid input!!!\n'.red);
+				else
+					console.log('==============\n');
 				inq.prompt(question).then(answerHandling);
 				return;
 			}

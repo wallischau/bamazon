@@ -11,6 +11,7 @@ var mysql = require('mysql');
 // var func = require('./shared.js');
 var inq = require('inquirer');
 require('console.table');
+var colors = require('colors');
 
 //answer handing
 function answerHandling(user) {
@@ -54,7 +55,7 @@ inq.prompt(question).then(answerHandling);
 
 //display item for sale
 var displayItemForSale = function(connection) {
-	console.log('\nSale list:');
+	console.log('\nSale list:'.yellow);
 	var query = connection.query("SELECT item_id, product_name, price, stock_quantity FROM products", function(err, res) {
 		if (err) throw err;
 		// console.log(res);
@@ -83,7 +84,7 @@ function viewProduct() {
 
 //display low inventory
 var displayLowInventory = function(connection) {
-	console.log('\nLow inventory list:');
+	console.log('\nLow inventory list:'.yellow);
 	var query = connection.query("SELECT item_id, product_name, department_name, stock_quantity FROM products WHERE stock_quantity < ?", 
 		[5], function(err, res) {
 		if (err) throw err;
@@ -119,17 +120,17 @@ var addToInventory = function(connection, quantity, id) {
 		connection.end();
 		return;
 	}
-	console.log('\nAdd to Inventory...');
+	console.log('\nAdd to Inventory...'.yellow);
 	// console.log(id, quantity);
 	var query = connection.query("UPDATE products SET stock_quantity = ? WHERE item_id = ?", [quantity, id], function(err, res) {
 		if (err) throw err;
 		// console.log(res);
 		// console.table(res);
 		if (res.affectedRows === 0) {
-			console.log('!!!invalid entry!!!');
+			console.log('!!!invalid entry!!!'.red);
 		}
 		else {
-			console.log('Item ' + id + ' updated. \n================\n');
+			console.log(`Item ${id} updated. \n================\n`.green);
 		}
 		inq.prompt(question).then(answerHandling);
 		connection.end();
@@ -182,24 +183,23 @@ function addInventory() {
 			});
 
 		});//.then
-
 }//addInventory
 
 //validate input 
 function validateNewProd(id, name, department, price, quantity) {
 	if ((id === 'q') || (price === 'q') || (quantity === 'q')) {
-		return false;
+		return 1;
 	}
-	if ((id === '') || (name === '') || (department === '') || ( price < 0) || (quantity < 0)) {
-		return false;
+	if ((id === '') || (name === '') || (department === '') || ( price < 0) || (price === '') || (quantity < 0) || (quantity === '')) {
+		return 2;
 	}
 	else
-		return true;
+		return 0;
 }
 
 //add new product
 var addNewProd = function(connection, id, name, department, price, quantity) {
-	console.log('\nAdd new product...');
+	console.log('\nAdd new product...'.yellow);
 	// console.log(id, name, department, price, quantity);
 	var query = connection.query("INSERT INTO products (item_id, product_name, department_name, price, stock_quantity) VALUES ? ",
 		 [[[id, name, department, price, quantity]]]
@@ -207,10 +207,11 @@ var addNewProd = function(connection, id, name, department, price, quantity) {
 		if (err) throw err;
 		// console.log(res);
 		if (res.affectedRows === 0) {
-			console.log('invalid entry');
+			console.log('invalid entry'.red);
 		}
 		else {
-			console.log('Item ' + id + ' added. \n================\n');
+			// console.log('Item ' + id + ' added. \n================\n');
+			console.log(`Item ${id} added. \n================\n`.green);
 		}
 		inq.prompt(question).then(answerHandling);
 		connection.end();
@@ -272,8 +273,12 @@ function addNewProduct() {
 		])
 		.then(function(user) {
 			// console.log(user);
-			if(!validateNewProd(user.id, user.name, user.department, user.price, user.quantity)) {
-				console.log('Invalid input');
+			var status = validateNewProd(user.id, user.name, user.department, user.price, user.quantity);
+			if (status > 0) {
+				if (status === 2)
+					console.log('!!!Invalid input!!!\n'.red);
+				else
+					console.log('==============\n');
 				inq.prompt(question).then(answerHandling);
 				return;
 			}
