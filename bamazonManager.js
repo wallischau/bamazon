@@ -1,9 +1,19 @@
+/* App: bamazon Manager                               */
+/* Author: Wallis Chau                                */
+/* Date: 10/10/17                                     */
+/* Description: List product inventory                */
+/*              View low inventory product            */
+/*              Add inventory                         */
+/*              Add new product                       */
+
+
 var mysql = require('mysql');
 // var func = require('./shared.js');
 var inq = require('inquirer');
 require('console.table');
 
-function listMenu(user) {
+//answer handing
+function answerHandling(user) {
 	var code = user.action.substring(1,3);
 	// console.log(code);
 	switch (code) {
@@ -24,6 +34,7 @@ function listMenu(user) {
 	}
 }
 
+//question prompt
 var question = [
 	{
 		type: 'list',
@@ -39,21 +50,21 @@ var question = [
 	}
 ];
 
-inq.prompt(question).then(listMenu);
+inq.prompt(question).then(answerHandling);
 
-var displayItemForSale = function(connection, done) {
+//display item for sale
+var displayItemForSale = function(connection) {
 	console.log('\nSale list:');
 	var query = connection.query("SELECT item_id, product_name, price, stock_quantity FROM products", function(err, res) {
 		if (err) throw err;
 		// console.log(res);
 		console.table(res);
-		inq.prompt(question).then(listMenu);
+		inq.prompt(question).then(answerHandling);
 		connection.end();
-		done = true;
-		return done;
 	});//query
 }//displayItemForsale
 
+//display products for sale
 function viewProduct() {
 	var connection = mysql.createConnection({
 		host: 'localhost',
@@ -70,6 +81,7 @@ function viewProduct() {
 	});
 }//viewProduct
 
+//display low inventory
 var displayLowInventory = function(connection) {
 	console.log('\nLow inventory list:');
 	var query = connection.query("SELECT item_id, product_name, department_name, stock_quantity FROM products WHERE stock_quantity < ?", 
@@ -77,7 +89,7 @@ var displayLowInventory = function(connection) {
 		if (err) throw err;
 		// console.log(res);
 		console.table(res);
-		inq.prompt(question).then(listMenu);
+		inq.prompt(question).then(answerHandling);
 		connection.end();
 	});//query
 }//displayItemForsale	
@@ -98,7 +110,15 @@ function viewLowInventory() {
 	});
 }//viewLowInventory
 
+//add stock inventory
 var addToInventory = function(connection, quantity, id) {
+	//validate 
+	if ((id === 'q') || (quantity === 'q')) {
+		console.log('\n------------\n');
+		inq.prompt(question).then(answerHandling);
+		connection.end();
+		return;
+	}
 	console.log('\nAdd to Inventory...');
 	// console.log(id, quantity);
 	var query = connection.query("UPDATE products SET stock_quantity = ? WHERE item_id = ?", [quantity, id], function(err, res) {
@@ -106,12 +126,12 @@ var addToInventory = function(connection, quantity, id) {
 		// console.log(res);
 		// console.table(res);
 		if (res.affectedRows === 0) {
-			console.log('invalid entry');
+			console.log('!!!invalid entry!!!');
 		}
 		else {
-			console.log(res.affectedRows + ' rows added');
+			console.log('Item ' + id + ' updated. \n================\n');
 		}
-		inq.prompt(question).then(listMenu);
+		inq.prompt(question).then(answerHandling);
 		connection.end();
 	});//query
 }//addToInventory	 
@@ -121,17 +141,27 @@ function addInventory() {
 		{
 			type: 'input',
 			name: 'id',
-			message: 'Item ID: ',
+			message: 'Item ID: ("q" to go back)',
 			validate: function(value) {
-				return ((isNaN(value) === false)? true: false); 
+				if ((isNaN(value) === true) && (value !== 'q')) {
+					console.log(" \n Please enter number id or 'q'");
+					return false;
+				}
+				else 
+					return true;
 			}
 		},
 		{
 			type: 'input',
 			name: 'quantity',
-			message: 'Quantity: ',
+			message: 'Quantity: ("q" to go back)',
 			validate: function(value) {
-				return ((isNaN(value) === false)? true: false); 
+				if ((isNaN(value) === true) && (value !== 'q')) {
+					console.log(" \n Please enter number number or 'q'");
+					return false;
+				}
+				else 
+					return true;
 			}
 		}		
 		])
@@ -155,7 +185,11 @@ function addInventory() {
 
 }//addInventory
 
-function validate(id, name, department, price, quantity) {
+//validate input 
+function validateNewProd(id, name, department, price, quantity) {
+	if ((id === 'q') || (price === 'q') || (quantity === 'q')) {
+		return false;
+	}
 	if ((id === '') || (name === '') || (department === '') || ( price < 0) || (quantity < 0)) {
 		return false;
 	}
@@ -163,6 +197,7 @@ function validate(id, name, department, price, quantity) {
 		return true;
 }
 
+//add new product
 var addNewProd = function(connection, id, name, department, price, quantity) {
 	console.log('\nAdd new product...');
 	// console.log(id, name, department, price, quantity);
@@ -175,21 +210,27 @@ var addNewProd = function(connection, id, name, department, price, quantity) {
 			console.log('invalid entry');
 		}
 		else {
-			console.log(res.affectedRows + ' rows added');
+			console.log('Item ' + id + ' added. \n================\n');
 		}
-		inq.prompt(question).then(listMenu);
+		inq.prompt(question).then(answerHandling);
 		connection.end();
 	});//query
 }//addNewProduct	 
 
+//add new product
 function addNewProduct() {
 	inq.prompt([
 		{
 			type: 'input',
 			name: 'id',
-			message: 'Item ID: ',
+			message: 'Item ID: (\'q\' to go back) ',
 			validate: function(value) {
-				return ((isNaN(value) === false)? true: false); 
+				if ((isNaN(value) === true) && (value !== 'q')) {
+					console.log(" \n Please enter number id or 'q'");
+					return false;
+				}
+				else 
+					return true;
 			}
 		},
 		{
@@ -205,25 +246,35 @@ function addNewProduct() {
 		{
 			type: 'input',
 			name: 'price',
-			message: 'Price: ',
+			message: 'Price: (\'q\' to go back)',
 			validate: function(value) {
-				return ((isNaN(value) === false)? true: false); 
+				if ((isNaN(value) === true) && (value !== 'q')) {
+					console.log(" \n Please enter number or 'q'");
+					return false;
+				}
+				else 
+					return true;
 			}
 		},		
 		{
 			type: 'input',
 			name: 'quantity',
-			message: 'Quantity: ',
+			message: 'Quantity: (\'q\' to go back)',
 			validate: function(value) {
-				return ((isNaN(value) === false)? true: false); 
+				if ((isNaN(value) === true) && (value !== 'q')) {
+					console.log(" \n Please enter number or 'q'");
+					return false;
+				}
+				else 
+					return true;
 			}
 		}		
 		])
 		.then(function(user) {
 			// console.log(user);
-			if(!validate(user.id, user.name, user.department, user.price, user.quantity)) {
+			if(!validateNewProd(user.id, user.name, user.department, user.price, user.quantity)) {
 				console.log('Invalid input');
-				inq.prompt(question).then(listMenu);
+				inq.prompt(question).then(answerHandling);
 				return;
 			}
 			var connection = mysql.createConnection({
@@ -240,6 +291,5 @@ function addNewProduct() {
 				addNewProd(connection, user.id, user.pname, user.department, user.price, user.quantity);
 				// connection.end();
 			});
-
 		});//.then
 }//addNewProduct

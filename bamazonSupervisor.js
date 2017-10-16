@@ -1,3 +1,9 @@
+/* App: bamazon Superviser                            */
+/* Author: Wallis Chau                                */
+/* Date: 10/10/17                                     */
+/* Description: List inventory by department          */
+/*              Add new department                    */
+
 var mysql = require('mysql');
 var inq = require('inquirer');
 // var func = require('./shared.js');
@@ -16,7 +22,7 @@ var question = [
 	}
 ];//question
 
-function listMenu(user) {
+function answerHandling(user) {
 	// console.log(user);
 	var act = user.action.substring(1,3);
 	switch (act) {
@@ -33,7 +39,7 @@ function listMenu(user) {
 	}
 }
 
-inq.prompt(question).then(listMenu);
+inq.prompt(question).then(answerHandling);
 
 var displayProductSaleByDept = function(connection) {
 	console.log('\nDisplay sales by departments:');
@@ -41,7 +47,7 @@ var displayProductSaleByDept = function(connection) {
 		if (err) throw err;
 		// console.log(res);
 		console.table(res);
-		inq.prompt(question).then(listMenu);
+		inq.prompt(question).then(answerHandling);
 		connection.end();
 	});//query
 }//displayProductSaleByDept	
@@ -63,7 +69,10 @@ function displaySaleByDepartment() {
 }//displaySaleByDepartment
 
 
-function validate(id, department, overhead) {
+function validateNewDept(id, department, overhead) {
+	if ((id === 'q') || (overhead === 'q')) {
+		return false;
+	}
 	if ((id === '') || (department === '') || ( overhead < 0)) {
 		return false;
 	}
@@ -78,8 +87,8 @@ var createNewDept = function(connection, id, department, overheadCost) {
 		 , function(err, res) {
 		if (err) throw err;
 		// console.log(res);
-		console.log(res.affectedRows + ' rows');
-		inq.prompt(question).then(listMenu);
+		console.log('create completed \n============\n');
+		inq.prompt(question).then(answerHandling);
 		connection.end();
 	});//query
 }//createNewDept	 
@@ -89,9 +98,14 @@ function createNewDepartment() {
 		{
 			type: 'input',
 			name: 'id',
-			message: 'Department ID: ',
+			message: 'Department ID: ("q" to go back)',
 			validate: function(value) {
-				return ((isNaN(value) === false)? true: false); 
+				if ((isNaN(value) === true) && (value !== 'q')) {
+					console.log(" \n Please enter number id or 'q'");
+					return false;
+				}
+				else 
+					return true;
 			}
 		},
 		{
@@ -102,17 +116,22 @@ function createNewDepartment() {
 		{
 			type: 'input',
 			name: 'overHeadCost',
-			message: 'Over head cost: ',
+			message: 'Over head cost: ("q" to go back)',
 			validate: function(value) {
-				return ((isNaN(value) === false)? true: false); 
+					if ((isNaN(value) === true) && (value !== 'q')) {
+					console.log(" \n Please enter number id or 'q'");
+					return false;
+				}
+				else 
+					return true;
 			}
 		}		
 		])
 		.then(function(user) {
 			// console.log(user);
-			if(!validate(user.id, user.department, user.overHeadCost)) {
-				console.log('Invalid input');
-				inq.prompt(question).then(listMenu);
+			if(!validateNewDept(user.id, user.department, user.overHeadCost)) {
+				console.log('!!!Invalid input!!!');
+				inq.prompt(question).then(answerHandling);
 				return;
 			}
 
