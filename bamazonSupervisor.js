@@ -86,7 +86,12 @@ var createNewDept = function(connection, id, department, overheadCost) {
 	var query = connection.query("INSERT INTO departments(department_id, department_name, over_head_costs) VALUES ? ",
 		 [[[id, department, overheadCost]]]
 		 , function(err, res) {
-		if (err) throw err;
+		if (err) {
+			console.log("invalid entry".red);
+			inq.prompt(question).then(answerHandling);
+			connection.end();
+			return;
+		} 
 		// console.log(res);
 		console.log('create completed \n============\n'.green);
 		inq.prompt(question).then(answerHandling);

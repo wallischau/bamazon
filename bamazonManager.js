@@ -204,7 +204,12 @@ var addNewProd = function(connection, id, name, department, price, quantity) {
 	var query = connection.query("INSERT INTO products (item_id, product_name, department_name, price, stock_quantity) VALUES ? ",
 		 [[[id, name, department, price, quantity]]]
 		 , function(err, res) {
-		if (err) throw err;
+		if (err) {
+			console.log('invalid entry'.red);
+			inq.prompt(question).then(answerHandling);
+			connection.end();
+			return;
+		} 
 		// console.log(res);
 		if (res.affectedRows === 0) {
 			console.log('invalid entry'.red);
