@@ -1,5 +1,5 @@
 # bamazon app
-
+Node JS CLI application.
 Description: This application has 3 parts, customer, manager and supervisor modes.
 
 Customer mode:
